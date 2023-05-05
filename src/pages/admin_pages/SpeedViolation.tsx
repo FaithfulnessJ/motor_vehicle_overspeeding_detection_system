@@ -1,49 +1,41 @@
 import { Box } from "@chakra-ui/react";
-import { useState, useLayoutEffect } from "react";
+import { useState } from "react";
 import AdminLayout from "../../components/AdminLayout";
 import BreadCrumb from "../../components/general/BreadCrumb";
 import { FaSkullCrossbones } from "react-icons/fa";
 import { HiOutlineSearch } from "react-icons/hi";
 import Wrapper from "../../components/general/Wrapper";
 import CustomInput from "../../components/general/CustomInput";
-import Table from "../../components/general/table/Table";
-import TablePagination from "../../components/general/table/TablePagination";
-import { useTable } from "../../hooks/useTable";
+import { ConfigProvider, Table } from "antd";
 import { useViolation } from "../../hooks/useViolation";
-import { IoMdAdd } from "react-icons/io";
-import { FaFilter } from "react-icons/fa";
-import ActionButton from "../../components/general/ActionButton";
-import { useScreenListener } from "../../hooks/useScreenListener";
 import { fomartTime } from "../../utils/formatTime";
 
 export const SpeedViolation = (): JSX.Element => {
-  const [page, setPage] = useState<number>(1);
-  const [perPage, setPerPage] = useState<number>(25);
   const [searchValue, setSearchValue] = useState<string>("");
-  const [showFilter, setShowFilter] = useState<boolean>(false);
-  const [resizeFilter, setResizeFilter] = useState<boolean>(false);
 
-  const { violations } = useViolation();
-  const {
-    slice,
-    count,
-    sortByDateCreatedAscending,
-    sortByDateCreatedDescending,
-  } = useTable(violations, page, perPage);
-  const screenSize = useScreenListener();
+  const { stateLoading, filteredViolations } = useViolation(searchValue);
 
-  useLayoutEffect(() => {
-    if (screenSize <= 992) {
-      setResizeFilter(true);
-    } else {
-      setResizeFilter(false);
-    }
-  }, [screenSize]);
-
-  const updatePerPage = (count: number) => {
-    setPerPage(count);
-    setPage(1);
-  };
+  const columns = [
+    {
+      title: "Vehicle Number plate",
+      dataIndex: "vehicleNumberPlate",
+    },
+    {
+      title: "Area of violation",
+      dataIndex: "area",
+    },
+    {
+      title: "Vehicle Speed",
+      dataIndex: "speed",
+      render: (text:any) => <div>{text} km/hr</div>
+    },
+    {
+      title: "Time of violation",
+      dataIndex: "dateTime",
+      sorter: (a: any, b: any) => a?.dateTime - b?.dateTime,
+      render: (text:any) => <div>{fomartTime(text)}</div>
+    },
+  ];
 
   return (
     <AdminLayout>
@@ -53,7 +45,7 @@ export const SpeedViolation = (): JSX.Element => {
           title={"Speed violations"}
         />
         <Wrapper>
-          <Box className="mt-10 mb-5 flex items-center justify-between">
+          <Box className="mt-10 mb-5">
             <CustomInput
               icon={<HiOutlineSearch className="text-xl" />}
               placeholder={"Input your search..."}
@@ -65,102 +57,37 @@ export const SpeedViolation = (): JSX.Element => {
                 throw new Error("Function not implemented.");
               }}
             />
-
-            <Box
-              className="relative"
-              onMouseEnter={() => setShowFilter(true)}
-              onMouseLeave={() => setShowFilter(false)}
-            >
-              {resizeFilter ? (
-                <Box
-                  padding={3}
-                  border={"1px"}
-                  borderRadius={"lg"}
-                  borderColor={"#2F2A5E"}
-                  as="button"
-                >
-                  <FaFilter className="text-[#2F2A5E]" />
-                </Box>
-              ) : (
-                <ActionButton leftIcon={<IoMdAdd />} variant={"outline"}>
-                  Add Filter
-                </ActionButton>
-              )}
-
-              {showFilter && (
-                <Box className="absolute right-0 top-11 bg-white w-40 rounded-md p-2 flex flex-col gap-0.5">
-                  <Box
-                    className="pl-1 py-1 cursor-pointer hover:bg-gray-200 hover:rounded-md"
-                    onClick={() => sortByDateCreatedDescending(violations)}
-                  >
-                    Latest violations
-                  </Box>
-                  <Box
-                    className="pl-1 py-1 cursor-pointer hover:bg-gray-200 hover:rounded-md"
-                    onClick={() => sortByDateCreatedAscending(violations)}
-                  >
-                    Old violations
-                  </Box>
-                </Box>
-              )}
-            </Box>
           </Box>
-          <Table
-            headers={[
-              "Owner phone number",
-              "Vehicle No. plate",
-              "Area of violation",
-              "Vehicle Speed",
-              "Time of violation",
-            ]}
-            footer={
-              <TablePagination
-                count={count}
-                setPage={setPage}
-                updatePerPage={updatePerPage}
-                page={page}
-                options={[25, 50, 100, 150]}
-              />
-            }
+          <ConfigProvider
+            theme={{
+              token: {
+                colorPrimary: "#000",
+                colorPrimaryTextActive: "#000",
+                colorPrimaryText: "#808080",
+                colorPrimaryBg: "#fff",
+              },
+            }}
           >
-            {slice
-              ?.filter((violation) =>
-                violation === null
-                  ? violation
-                  : violation.area
-                      .toLowerCase()
-                      .includes(searchValue.toLowerCase()) ||
-                    violation.vehicleNumberPlate
-                      .toLowerCase()
-                      .includes(searchValue.toLowerCase()) ||
-                    violation.phoneNumber
-                      .toLowerCase()
-                      .includes(searchValue.toLowerCase())
-              )
-              ?.map((data, index) => {
-                const isEven = index % 2;
-                return (
-                  <tr
-                    className={`h-14 ${isEven ? "bg-white" : "bg-gray-100"}`}
-                    key={index}
-                  >
-                    <td className="capitalize py-3 px-4">
-                      {data?.phoneNumber}
-                    </td>
-
-                    <td className="py-3 px-4">{data?.vehicleNumberPlate}</td>
-
-                    <td className="py-3 px-4">{data?.area}</td>
-
-                    <td className="py-3 px-4">{data?.speed}</td>
-
-                    <td className="py-3 px-4">{fomartTime(data?.dateTime)}</td>
-                  </tr>
-                );
-              })}
-          </Table>
+            <div>
+              <Table
+                rowKey={(data) => data.id}
+                loading={stateLoading}
+                pagination={{
+                  defaultPageSize: 15,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["10", "15", "20", "30"],
+                }}
+                // rowSelection={{
+                //   type: "checkbox",
+                //   ...rowSelection,
+                // }}
+                columns={columns}
+                dataSource={filteredViolations}
+              />
+            </div>
+          </ConfigProvider>
         </Wrapper>
       </Box>
     </AdminLayout>
   );
-};
+}
