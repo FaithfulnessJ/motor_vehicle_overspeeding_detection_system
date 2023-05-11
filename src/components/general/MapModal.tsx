@@ -69,7 +69,7 @@ const MapModal = ({
 
     try {
       // Delay the execution of the function by 11 seconds
-      await new Promise((resolve) => setTimeout(resolve, 22000));
+      await new Promise((resolve) => setTimeout(resolve, 11000));
 
       await SpeedVoilationServices.addSpeedViolation(data);
     } catch (error: any) {
