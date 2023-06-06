@@ -1,3 +1,4 @@
 export * from './Vehicles';
 export * from './ViewVehicle';
-export * from './SpeedViolation';
+export * from './SpeedViolations';
+export * from  './ViewVehicleViolations';

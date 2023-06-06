@@ -36,7 +36,7 @@ const MapModal = ({
   const toast = useToast();
   const { connection } = useConnection(vehicleId, sensorId);
   const { monitoredGeoLocations } = useAllMonitoredGeoLocation();
-  const { filteredViolations } = useViolation();
+  const { violations } = useViolation();
 
   // Formart time
   const now: number = Date.now();
@@ -69,7 +69,6 @@ const MapModal = ({
 
     try {
       // Delay the execution of the function by 11 seconds
-      await new Promise((resolve) => setTimeout(resolve, 11000));
 
       await SpeedVoilationServices.addSpeedViolation(data);
     } catch (error: any) {
@@ -96,15 +95,12 @@ const MapModal = ({
   if (geofence) {
     if (parseFloat(connection?.speed) > parseFloat(geofence.speed_limit)) {
       const newVehicleData = { ...vehicleData, notification: 1 };
-      if (filteredViolations?.length === 0) {
+      if (violations?.length === 0) {
         recordViolation(geofence.area);
       } else {
-        for (const violation of filteredViolations) {
-          if (
-            fomartTime(violation?.dateTime) !== connection?.datetime ||
-            violation?.area !== geofence.area ||
-            violation?.vehicleNumberPlate !== connection?.vehicleNumberPlate
-          ) {
+        for (const violation of violations) {
+          new Promise((resolve) => setTimeout(resolve, 10000));
+          if (fomartTime(violation?.dateTime) !== connection?.datetime) {
             recordViolation(geofence.area);
           }
         }

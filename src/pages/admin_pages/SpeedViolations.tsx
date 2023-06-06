@@ -1,19 +1,30 @@
-import { Box } from "@chakra-ui/react";
+import { Box, Button } from "@chakra-ui/react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
 import BreadCrumb from "../../components/general/BreadCrumb";
-import { FaSkullCrossbones } from "react-icons/fa";
+import { FaSkullCrossbones, FaEye } from "react-icons/fa";
 import { HiOutlineSearch } from "react-icons/hi";
 import Wrapper from "../../components/general/Wrapper";
 import CustomInput from "../../components/general/CustomInput";
 import { ConfigProvider, Table } from "antd";
 import { useViolation } from "../../hooks/useViolation";
 import { fomartTime } from "../../utils/formatTime";
+import ActionButton from "../../components/general/ActionButton";
 
-export const SpeedViolation = (): JSX.Element => {
+export const SpeedViolations = (): JSX.Element => {
   const [searchValue, setSearchValue] = useState<string>("");
+  const navigate = useNavigate();
 
-  const { stateLoading, filteredViolations } = useViolation(searchValue);
+  const { stateLoading, violations, handleSearch } = useViolation();
+
+  const searchViolation = async (searchValue: string) => {
+    await handleSearch(searchValue);
+  };
+
+  const handleViewViolation = (violation: any) => {
+    navigate(`${violation?.vehicleNumberPlate}`, violation);
+  };
 
   const columns = [
     {
@@ -21,19 +32,32 @@ export const SpeedViolation = (): JSX.Element => {
       dataIndex: "vehicleNumberPlate",
     },
     {
-      title: "Area of violation",
-      dataIndex: "area",
-    },
-    {
       title: "Vehicle Speed",
       dataIndex: "speed",
-      render: (text:any) => <div>{text} km/hr</div>
+      render: (text: any) => <div>{text} km/hr</div>,
     },
     {
       title: "Time of violation",
       dataIndex: "dateTime",
       sorter: (a: any, b: any) => a?.dateTime - b?.dateTime,
-      render: (text:any) => <div>{fomartTime(text)}</div>
+      render: (text: any) => <div>{fomartTime(text)}</div>,
+    },
+    {
+      title: "Action",
+      dataIndex: "action",
+      render: (_: any, violation: any) => {
+        return (
+          <Button
+            fontSize="xl"
+            p="2"
+            h=""
+            className="rounded-md text-primary_color border-2 border-primary_color"
+            onClick={() => handleViewViolation(violation)}
+          >
+            <FaEye />
+          </Button>
+        );
+      },
     },
   ];
 
@@ -45,7 +69,12 @@ export const SpeedViolation = (): JSX.Element => {
           title={"Speed violations"}
         />
         <Wrapper>
-          <Box className="mt-10 mb-5">
+          <Box
+            className="mt-10 mb-5"
+            display={"flex"}
+            justifyItems={"center"}
+            gap={4}
+          >
             <CustomInput
               icon={<HiOutlineSearch className="text-xl" />}
               placeholder={"Input your search..."}
@@ -57,6 +86,12 @@ export const SpeedViolation = (): JSX.Element => {
                 throw new Error("Function not implemented.");
               }}
             />
+            <ActionButton
+              variant="solid"
+              handleClick={() => searchViolation(searchValue)}
+            >
+              Search
+            </ActionButton>
           </Box>
           <ConfigProvider
             theme={{
@@ -82,7 +117,7 @@ export const SpeedViolation = (): JSX.Element => {
                 //   ...rowSelection,
                 // }}
                 columns={columns}
-                dataSource={filteredViolations}
+                dataSource={violations}
               />
             </div>
           </ConfigProvider>
@@ -90,4 +125,4 @@ export const SpeedViolation = (): JSX.Element => {
       </Box>
     </AdminLayout>
   );
-}
+};

@@ -7,7 +7,7 @@ export const fomartTime  = (currentTime: number) => {
     const hours: number = currentDate.getHours();
     const minutes: number = currentDate.getMinutes();
     const seconds: number = currentDate.getSeconds();
-  
+    
     const formattedTime: string = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 
     return formattedTime;

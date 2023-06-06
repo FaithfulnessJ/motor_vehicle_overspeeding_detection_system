@@ -1,6 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import { useRef, useEffect } from "react";
 import { useAllMonitoredGeoLocation } from "../../hooks/useAllMonitoredGeoLocation";
+import loader from "../../utils/googleMapLoader";
 
 type Map = {
   lat: number;
@@ -14,42 +15,48 @@ const Map = ({ lat, lng, width, height }: Map): JSX.Element => {
   const { monitoredGeoLocations } = useAllMonitoredGeoLocation();
 
   useEffect(() => {
-    const map = new google.maps.Map(mapRef.current!, {
-      center: { lat, lng },
-      zoom: 15,
-      zoomControl: true,
-      scaleControl: false,
-    });
+    loader.load().then(async () => {
+      const { Map } = (await google.maps.importLibrary(
+        "maps"
+      )) as google.maps.MapsLibrary;
 
-    new google.maps.Marker({
-      position: { lat, lng },
-      map: map,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 7,
-        strokeColor: "#2BCCFC",
-      },
-    });
+      const map = new Map(mapRef.current!, {
+        center: { lat, lng },
+        zoom: 15,
+        zoomControl: true,
+        scaleControl: false,
+      });
 
-    monitoredGeoLocations.forEach((monitoredGeoLocation) => {
-      const maker = new google.maps.Marker({
-        position: {
-          lat: monitoredGeoLocation.location._lat,
-          lng: monitoredGeoLocation.location._long,
-        },
+      new google.maps.Marker({
+        position: { lat, lng },
         map: map,
-        animation: google.maps.Animation.DROP,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 7,
+          strokeColor: "#2BCCFC",
+        },
       });
 
-      const infoWindow = new google.maps.InfoWindow({
-        content: `
-        <div>
-          <p>Speed limit:${monitoredGeoLocation.speed_limit} km/hr</p>
-          <p>Around ${monitoredGeoLocation.area}</p>
-        </div>
-        `,
+      monitoredGeoLocations.forEach((monitoredGeoLocation) => {
+        const maker = new google.maps.Marker({
+          position: {
+            lat: monitoredGeoLocation.location._lat,
+            lng: monitoredGeoLocation.location._long,
+          },
+          map: map,
+          animation: google.maps.Animation.DROP,
+        });
+
+        const infoWindow = new google.maps.InfoWindow({
+          content: `
+          <div>
+            <p>Speed limit:${monitoredGeoLocation.speed_limit} km/hr</p>
+            <p>Around ${monitoredGeoLocation.area}</p>
+          </div>
+          `,
+        });
+        infoWindow.open(map, maker);
       });
-      infoWindow.open(map, maker);
     });
   }, [lat, lng, monitoredGeoLocations]);
 

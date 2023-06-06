@@ -9,16 +9,18 @@ import { HiOutlineSearch } from "react-icons/hi";
 import { useUserStore } from "../../utils/zustand/Store";
 import { Congrats } from "../../assets/icons/Congrats";
 import { fomartTime } from "../../utils/formatTime";
+import ActionButton from "../../components/general/ActionButton";
 
 export const ViewYourViolations = (): JSX.Element => {
   const [searchValue, setSearchValue] = useState<string>("");
 
   const user = useUserStore((state: any) => state.user);
 
-  const { stateLoading, filteredViolations } = useMyViolation(
-    user.uid,
-    searchValue
-  );
+  const { stateLoading, violations, handleSearch } = useMyViolation(user.uid);
+
+  const searchViolation = async (searchValue: string) => {
+    await handleSearch(searchValue);
+  };
 
   const columns = [
     {
@@ -38,15 +40,13 @@ export const ViewYourViolations = (): JSX.Element => {
       title: "Time of violation",
       dataIndex: "dateTime",
       sorter: (a: any, b: any) => a?.dateTime - b?.dateTime,
-      render: (text: any) => (
-        <div>{fomartTime(text)}</div>
-      ),
+      render: (text: any) => <div>{fomartTime(text)}</div>,
     },
   ];
 
   return (
     <UserLayout>
-      {filteredViolations.length === 0 ? (
+      {violations.length === 0 ? (
         <Center>
           <Wrapper>
             <Box className="p-10 md:p-24">
@@ -69,7 +69,12 @@ export const ViewYourViolations = (): JSX.Element => {
         </Center>
       ) : (
         <Wrapper>
-          <Box className="mt-10 mb-5">
+          <Box
+            className="mt-10 mb-5"
+            display={"flex"}
+            justifyItems={"center"}
+            gap={4}
+          >
             <CustomInput
               icon={<HiOutlineSearch className="text-xl" />}
               placeholder={"Input your search..."}
@@ -81,6 +86,12 @@ export const ViewYourViolations = (): JSX.Element => {
                 throw new Error("Function not implemented.");
               }}
             />
+            <ActionButton
+              variant="solid"
+              handleClick={() => searchViolation(searchValue)}
+            >
+              Search
+            </ActionButton>
           </Box>
           <ConfigProvider
             theme={{
@@ -107,7 +118,7 @@ export const ViewYourViolations = (): JSX.Element => {
                 //   ...rowSelection,
                 // }}
                 columns={columns}
-                dataSource={filteredViolations}
+                dataSource={violations}
               />
             </div>
           </ConfigProvider>
