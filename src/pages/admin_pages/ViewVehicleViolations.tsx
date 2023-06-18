@@ -33,6 +33,11 @@ export const ViewVehicleViolations = () => {
     await handleSearch(searchValue);
   };
 
+  const clearSearch = async () => {
+    setSearchValue("");
+    await handleSearch();
+  };
+
   const columns = [
     {
       title: "Area of Violation",
@@ -72,6 +77,7 @@ export const ViewVehicleViolations = () => {
                 placeholder={"Input your search..."}
                 handleChange={(e) => setSearchValue(e.target.value)}
                 name={"search"}
+                value={searchValue}
                 type={"text"}
                 width={"60%"}
                 handleEyeClick={function (arg0: string): void {
@@ -83,6 +89,13 @@ export const ViewVehicleViolations = () => {
                 handleClick={() => searchViolation(searchValue)}
               >
                 Search
+              </ActionButton>
+              <ActionButton
+                variant="outline"
+                isDisabled={!searchValue}
+                handleClick={clearSearch}
+              >
+                Clear
               </ActionButton>
             </Box>
             <ConfigProvider

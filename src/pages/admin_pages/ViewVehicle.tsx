@@ -40,8 +40,6 @@ export const ViewVehicle = (): JSX.Element => {
     );
   }, [vehicles, vehicleID]);
 
-  console.log(vehicle)
-
   const { connection } = useConnection(vehicleID, vehicle?.sensorId);
 
   const handleOpenViewMap = useCallback(() => {

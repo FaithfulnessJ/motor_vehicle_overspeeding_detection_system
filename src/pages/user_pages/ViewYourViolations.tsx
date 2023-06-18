@@ -22,6 +22,11 @@ export const ViewYourViolations = (): JSX.Element => {
     await handleSearch(searchValue);
   };
 
+  const clearSearch = async () => {
+    setSearchValue("");
+    await handleSearch();
+  };
+
   const columns = [
     {
       title: "Vehicle Number plate",
@@ -80,6 +85,7 @@ export const ViewYourViolations = (): JSX.Element => {
               placeholder={"Input your search..."}
               handleChange={(e) => setSearchValue(e.target.value)}
               name={"search"}
+              value={searchValue}
               type={"text"}
               width={"60%"}
               handleEyeClick={function (arg0: string): void {
@@ -92,6 +98,13 @@ export const ViewYourViolations = (): JSX.Element => {
             >
               Search
             </ActionButton>
+            <ActionButton
+                variant="outline"
+                isDisabled={!searchValue}
+                handleClick={clearSearch}
+              >
+                Clear
+              </ActionButton>
           </Box>
           <ConfigProvider
             theme={{
